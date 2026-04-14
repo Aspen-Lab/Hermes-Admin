@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hermes — Technical Architecture</title>
+<title>Hermes — Knowledge Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -36,8 +36,20 @@ body {
 /* ── Header ── */
 .header { margin-bottom: 28px; }
 .header-label { font-family:'DM Mono',monospace; font-size:9.5px; letter-spacing:0.7px; text-transform:uppercase; color:var(--text-3); margin-bottom:6px; }
-.header-title { font-size:22px; font-weight:700; color:var(--text-0); margin-bottom:4px; }
+.header-title { font-size:22px; font-weight:700; color:var(--text-0); }
 .header-sub { font-size:12.5px; color:var(--text-2); max-width:700px; }
+
+/* ── Page switcher ── */
+.page-view { display:none; }
+.page-view.active { display:block; }
+.page-switch { display:flex; gap:2px; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:2px; }
+.page-btn {
+  background:none; border:none; padding:6px 16px; border-radius:6px;
+  font-family:'DM Mono',monospace; font-size:11px; font-weight:500;
+  color:var(--text-3); cursor:pointer; transition:all .15s;
+}
+.page-btn:hover { color:var(--text-2); }
+.page-btn.active { background:var(--accent-dim); color:var(--accent); }
 
 /* ── Tabs ── */
 .tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:28px; }
@@ -52,10 +64,11 @@ body {
 .tab-content { display:none; }
 .tab-content.active { display:block; }
 
-/* ── Grid containers (1px gap technique) ── */
+/* ── Grid containers ── */
 .grid-wrap { background:var(--border); border-radius:10px; overflow:hidden; }
-.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1px; }
-.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; }
+.grid-2, .g2 { display:grid; grid-template-columns:1fr 1fr; gap:1px; }
+.grid-3, .g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; }
+.g4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:1px; }
 .grid-5 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; gap:1px; }
 .cell { background:var(--surface); padding:20px; transition:background 0.15s; }
 .cell:hover { background:var(--surface-2); }
@@ -92,7 +105,7 @@ body {
   margin-top:8px;
 }
 
-/* ── Callout ── */
+/* ── Callout / Note ── */
 .callout {
   background:var(--surface-2);
   border-left:2px solid var(--accent);
@@ -175,33 +188,45 @@ body {
 /* ── Comparison columns ── */
 .vs-header { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; }
 .vs-header .cell { text-align:center; padding:14px 18px; }
-.capability-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; }
-.capability-row .cell { padding:12px 18px; }
 .cap-yes { color:var(--accent); }
 .cap-no { color:var(--text-3); }
 
 @media(max-width:860px) {
   .board { padding:20px; }
-  .grid-2,.grid-3,.grid-5 { grid-template-columns:1fr; }
-  .flow { grid-template-columns:1fr; }
+  .grid-2,.grid-3,.grid-5,.g2,.g3,.g4 { grid-template-columns:1fr; }
+  .flow { grid-template-columns:1fr !important; }
   .sidebar-layout { grid-template-columns:1fr; }
   .sidebar { display:flex; overflow-x:auto; gap:4px; padding:8px; }
   .sidebar-item { white-space:nowrap; flex-shrink:0; }
-  .vs-header,.capability-row { grid-template-columns:1fr; }
+  .vs-header { grid-template-columns:1fr; }
+  .page-switch { align-self:flex-start; }
 }
 </style>
 </head>
 <body>
 <div class="board">
 
-<!-- Header -->
+<!-- ══════════════════════════════════════════════ -->
+<!-- SHARED HEADER                                  -->
+<!-- ══════════════════════════════════════════════ -->
 <div class="header">
-  <div class="header-label">Technical Architecture &middot; Thinking Surface</div>
-  <div class="header-title">Hermes &#25216;&#26415;&#21407;&#29702;&#19982;&#23454;&#29616;</div>
-  <div class="header-sub">五阶段数据管线 · 三层渐进增强架构 · 可插拔信源与输出 · 零 LLM 依赖也能运行</div>
+  <div class="header-label">Knowledge Dashboard</div>
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:4px;">
+    <div class="header-title" style="margin-bottom:0;">Hermes</div>
+    <div class="page-switch">
+      <button class="page-btn active" onclick="switchPage('arch')">技术架构</button>
+      <button class="page-btn" onclick="switchPage('prod')">产品战略</button>
+    </div>
+  </div>
 </div>
 
-<!-- Tabs -->
+<!-- ╔═══════════════════════════════════════════╗ -->
+<!-- ║  PAGE 1: 技术架构                          ║ -->
+<!-- ╚═══════════════════════════════════════════╝ -->
+<div class="page-view active" id="page-arch">
+
+<div class="body" style="margin-bottom:20px;max-width:700px;">五阶段数据管线 · 三层渐进增强架构 · 可插拔信源与输出 · 零 LLM 依赖也能运行</div>
+
 <div class="tabs">
   <button class="tab active" onclick="switchTab('overview')">系统总览</button>
   <button class="tab" onclick="switchTab('pipeline')">数据管线</button>
@@ -210,12 +235,8 @@ body {
   <button class="tab" onclick="switchTab('output')">输出与反馈</button>
 </div>
 
-<!-- ═══════════════════════════════════════ -->
-<!-- TAB: 系统总览                           -->
-<!-- ═══════════════════════════════════════ -->
+<!-- TAB: 系统总览 -->
 <div class="tab-content active" id="tab-overview">
-
-  <!-- Architecture flow -->
   <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">执行流程</span></div>
   <div class="flow-wrap">
     <div class="flow">
@@ -228,7 +249,6 @@ body {
   </div>
   <div class="note" style="margin-top:8px;">每次 <code class="mono" style="font-size:11px;color:var(--text-1)">hermes run</code> 按顺序执行上述五步。cron 定时触发，每步输出下一步的输入。单步失败不阻塞后续步骤。</div>
 
-  <!-- Design decisions -->
   <div class="sec-head"><span class="sec-num">02</span><span class="sec-title">核心设计决策</span></div>
   <div class="grid-wrap">
     <div class="grid-2">
@@ -255,7 +275,6 @@ body {
     </div>
   </div>
 
-  <!-- Tech stack overview -->
   <div class="sec-head"><span class="sec-num">03</span><span class="sec-title">技术栈一览</span></div>
   <div class="grid-wrap">
     <div class="grid-3">
@@ -278,12 +297,8 @@ body {
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════ -->
-<!-- TAB: 数据管线                           -->
-<!-- ═══════════════════════════════════════ -->
+<!-- TAB: 数据管线 -->
 <div class="tab-content" id="tab-pipeline">
-
-  <!-- Interactive flow -->
   <div class="flow-wrap">
     <div class="flow" id="pipeline-flow">
       <div class="flow-cell active" onclick="showStep(0)"><div class="flow-num">1</div><div class="flow-label">信源采集</div></div>
@@ -294,10 +309,7 @@ body {
     </div>
   </div>
 
-  <!-- Step details -->
   <div id="step-panels">
-
-    <!-- Step 1 -->
     <div class="detail-panel" id="step-0" style="display:block;">
       <div class="label">Step 1</div>
       <div class="title lg">信源采集 — 从全网拉取原始内容</div>
@@ -328,7 +340,6 @@ body {
       </div>
     </div>
 
-    <!-- Step 2 -->
     <div class="detail-panel" id="step-1">
       <div class="label">Step 2</div>
       <div class="title lg">相关性打分 — 基于用户画像计算 0–1 分数</div>
@@ -357,7 +368,6 @@ body {
       </div>
     </div>
 
-    <!-- Step 3 -->
     <div class="detail-panel" id="step-2">
       <div class="label">Step 3</div>
       <div class="title lg">去重聚合 — 合并同一话题的多源内容</div>
@@ -385,7 +395,6 @@ body {
       </div>
     </div>
 
-    <!-- Step 4 -->
     <div class="detail-panel" id="step-3">
       <div class="label">Step 4</div>
       <div class="title lg">内容蒸馏 — 生成摘要与解读</div>
@@ -412,7 +421,6 @@ body {
       <div class="callout" style="margin-top:8px;">输出结构：title / summary / relevance_note / source_url / score — 每条 item 统一格式，供下游 formatter 消费。</div>
     </div>
 
-    <!-- Step 5 -->
     <div class="detail-panel" id="step-4">
       <div class="label">Step 5</div>
       <div class="title lg">格式化输出 — 渲染为最终输出</div>
@@ -440,12 +448,8 @@ body {
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════ -->
-<!-- TAB: 三层架构                           -->
-<!-- ═══════════════════════════════════════ -->
+<!-- TAB: 三层架构 -->
 <div class="tab-content" id="tab-tiers">
-
-  <!-- Tier comparison header -->
   <div class="grid-wrap" style="margin-bottom:8px;">
     <div class="vs-header">
       <div class="cell" style="text-align:center;">
@@ -466,68 +470,25 @@ body {
     </div>
   </div>
 
-  <!-- Capability matrix -->
   <div class="tbl-wrap">
     <table class="tbl">
       <thead>
         <tr><th style="width:160px;">能力</th><th>Tier 0</th><th>Tier 1</th><th>Tier 2</th></tr>
       </thead>
       <tbody>
-        <tr>
-          <td>打分方式</td>
-          <td>TF-IDF + 关键词权重</td>
-          <td>语义 embedding 相似度</td>
-          <td>LLM 深度推理</td>
-        </tr>
-        <tr>
-          <td>摘要方式</td>
-          <td>提取前 N 句</td>
-          <td>LLM 生成式摘要</td>
-          <td>画像感知个性化摘要</td>
-        </tr>
-        <tr>
-          <td>语义理解</td>
-          <td class="cap-no">&#10007;</td>
-          <td class="cap-yes">&#10003;</td>
-          <td class="cap-yes">&#10003;</td>
-        </tr>
-        <tr>
-          <td>跨语言翻译</td>
-          <td class="cap-no">&#10007;</td>
-          <td class="cap-yes">&#10003; 基础</td>
-          <td class="cap-yes">&#10003; 高质量</td>
-        </tr>
-        <tr>
-          <td>完全离线</td>
-          <td class="cap-yes">&#10003;</td>
-          <td class="cap-yes">&#10003;</td>
-          <td class="cap-no">&#10007;</td>
-        </tr>
-        <tr>
-          <td>硬件需求</td>
-          <td>Python 3.10+ · 50MB RAM</td>
-          <td>8GB VRAM 或 16GB RAM</td>
-          <td>API Key</td>
-        </tr>
-        <tr>
-          <td>延迟/条</td>
-          <td>&lt; 10ms</td>
-          <td>1–5s</td>
-          <td>2–8s</td>
-        </tr>
-        <tr>
-          <td>适合场景</td>
-          <td>离线 · 低资源 · 简单兴趣</td>
-          <td>隐私优先 · 中等硬件</td>
-          <td>追求最佳效果 · 复杂画像</td>
-        </tr>
+        <tr><td>打分方式</td><td>TF-IDF + 关键词权重</td><td>语义 embedding 相似度</td><td>LLM 深度推理</td></tr>
+        <tr><td>摘要方式</td><td>提取前 N 句</td><td>LLM 生成式摘要</td><td>画像感知个性化摘要</td></tr>
+        <tr><td>语义理解</td><td class="cap-no">&#10007;</td><td class="cap-yes">&#10003;</td><td class="cap-yes">&#10003;</td></tr>
+        <tr><td>跨语言翻译</td><td class="cap-no">&#10007;</td><td class="cap-yes">&#10003; 基础</td><td class="cap-yes">&#10003; 高质量</td></tr>
+        <tr><td>完全离线</td><td class="cap-yes">&#10003;</td><td class="cap-yes">&#10003;</td><td class="cap-no">&#10007;</td></tr>
+        <tr><td>硬件需求</td><td>Python 3.10+ · 50MB RAM</td><td>8GB VRAM 或 16GB RAM</td><td>API Key</td></tr>
+        <tr><td>延迟/条</td><td>&lt; 10ms</td><td>1–5s</td><td>2–8s</td></tr>
+        <tr><td>适合场景</td><td>离线 · 低资源 · 简单兴趣</td><td>隐私优先 · 中等硬件</td><td>追求最佳效果 · 复杂画像</td></tr>
       </tbody>
     </table>
   </div>
 
-  <!-- Component details per tier -->
   <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">各层核心组件</span></div>
-
   <div id="tier-sidebar" class="sidebar-layout">
     <div class="sidebar">
       <button class="sidebar-item active" onclick="showTier(0)">Tier 0 · 规则</button>
@@ -535,7 +496,6 @@ body {
       <button class="sidebar-item" onclick="showTier(2)">Tier 2 · 云端</button>
     </div>
     <div class="sidebar-content">
-
       <div class="sidebar-panel active" id="tier-0">
         <div class="title">Tier 0 — 纯规则引擎</div>
         <div class="body" style="margin-bottom:14px;">零外部模型依赖。纯算法 + 标准库 + 轻量 pip 包。</div>
@@ -553,7 +513,6 @@ body {
           </table>
         </div>
       </div>
-
       <div class="sidebar-panel" id="tier-1">
         <div class="title">Tier 1 — 本地大模型</div>
         <div class="body" style="margin-bottom:14px;">在 Tier 0 基础上叠加本地 LLM 推理能力。数据不出本机。</div>
@@ -569,7 +528,6 @@ body {
           </table>
         </div>
       </div>
-
       <div class="sidebar-panel" id="tier-2">
         <div class="title">Tier 2 — 云端 API (BYOK)</div>
         <div class="body" style="margin-bottom:14px;">用户自带 API Key，Hermes 不存储不转发。密钥从环境变量或 config.yaml 读取。</div>
@@ -586,21 +544,15 @@ body {
           </table>
         </div>
       </div>
-
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════ -->
-<!-- TAB: 信源系统                           -->
-<!-- ═══════════════════════════════════════ -->
+<!-- TAB: 信源系统 -->
 <div class="tab-content" id="tab-sources">
-
   <div class="body" style="margin-bottom:20px;max-width:600px;">可插拔的 Source Adapter 系统。每个适配器继承 <code class="mono" style="font-size:11px;color:var(--text-1)">BaseSource</code>，实现 <code class="mono" style="font-size:11px;color:var(--text-1)">fetch()</code> + <code class="mono" style="font-size:11px;color:var(--text-1)">parse()</code>。放入 <code class="mono" style="font-size:11px;color:var(--text-1)">sources/</code> 目录自动发现。</div>
 
-  <!-- Source table by category -->
   <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">内置信源适配器</span></div>
-
   <div class="tbl-wrap" style="margin-bottom:16px;">
     <table class="tbl">
       <thead><tr><th>类别</th><th>信源</th><th>接入方式</th><th>限速</th></tr></thead>
@@ -619,7 +571,6 @@ body {
     </table>
   </div>
 
-  <!-- Adapter interface -->
   <div class="sec-head"><span class="sec-num">02</span><span class="sec-title">自定义适配器接口</span></div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
     <div style="padding:8px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);">
@@ -642,16 +593,11 @@ body {
             date=raw[<span style="color:var(--accent)">"published"</span>],
         )</pre>
   </div>
-
   <div class="note" style="margin-top:8px;">适配器放入 <code class="mono" style="font-size:11px;color:var(--text-1)">sources/</code> 目录后自动注册。无需修改核心代码。Hermes 启动时通过模块扫描发现所有 BaseSource 子类。</div>
 </div>
 
-<!-- ═══════════════════════════════════════ -->
-<!-- TAB: 输出与反馈                         -->
-<!-- ═══════════════════════════════════════ -->
+<!-- TAB: 输出与反馈 -->
 <div class="tab-content" id="tab-output">
-
-  <!-- Output formats -->
   <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">输出格式</span></div>
   <div class="grid-wrap">
     <div class="grid-3">
@@ -687,7 +633,6 @@ body {
     </div>
   </div>
 
-  <!-- Obsidian deep dive -->
   <div class="sec-head"><span class="sec-num">02</span><span class="sec-title">Obsidian 集成细节</span></div>
   <div class="grid-wrap">
     <div class="grid-2">
@@ -713,7 +658,6 @@ body {
     </div>
   </div>
 
-  <!-- Feedback loop -->
   <div class="sec-head"><span class="sec-num">03</span><span class="sec-title">反馈闭环</span></div>
   <div class="flow-wrap">
     <div class="flow" style="grid-template-columns:repeat(4,1fr);">
@@ -725,7 +669,6 @@ body {
   </div>
   <div class="note" style="margin-top:8px;">反馈信号存入 SQLite。权重调整采用指数移动平均（EMA），避免单次反馈过度修正。用户也可在 config.yaml 中手动覆盖任何自动调整。</div>
 
-  <!-- Obsidian note example -->
   <div class="sec-head"><span class="sec-num">04</span><span class="sec-title">输出示例</span></div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
     <div style="padding:8px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);">
@@ -739,31 +682,625 @@ body {
 <span style="color:var(--text-0)">## Cathode Research</span>
 
 <span style="color:var(--text-1)">### Sulfide electrolyte hits 4.2 mS/cm</span>
-KAIST &#22242;&#38431;&#23637;&#31034; Li&#8326;PS&#8325;Cl&#8320;.&#8325;Br&#8320;.&#8325; ...
+KAIST 团队展示 Li₆PS₅Cl₀.₅Br₀.₅ ...
 <span style="color:var(--text-3)">Relevance: directly relevant to [[Solid-State Thesis]]</span>
 Source: [arXiv 2604.08821](https://arxiv.org/abs/2604.08821)
 <span style="color:var(--text-3)">&#128077; / &#128078;</span>
 
 <span style="color:var(--text-0)">## AI/ML Tooling</span>
 
-<span style="color:var(--text-1)">### &#24320;&#28304;&#39046;&#22495;&#24494;&#35843;&#24037;&#20855;&#21253;</span>
-MIT &#21327;&#35758;&#30340; RLHF &#24037;&#20855;&#21253; ...
+<span style="color:var(--text-1)">### 开源领域微调工具包</span>
+MIT 协议的 RLHF 工具包 ...
 <span style="color:var(--text-3)">Relevance: connects to [[LLM Research Notes]]</span>
 Source: [HN](https://news.ycombinator.com/item?id=40123456)
 <span style="color:var(--text-3)">&#128077; / &#128078;</span></pre>
   </div>
 </div>
 
+</div><!-- /page-arch -->
+
+
+<!-- ╔═══════════════════════════════════════════╗ -->
+<!-- ║  PAGE 2: 产品战略                          ║ -->
+<!-- ╚═══════════════════════════════════════════╝ -->
+<div class="page-view" id="page-prod">
+
+<div class="body" style="margin-bottom:20px;max-width:700px;">产品远景 · Feature 分类 · 增长阶段 · Obsidian 团队模式研究 · 运营哲学</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('p-vision')">产品远景</button>
+  <button class="tab" onclick="switchTab('p-features')">Feature 分类</button>
+  <button class="tab" onclick="switchTab('p-phases')">增长阶段</button>
+  <button class="tab" onclick="switchTab('p-obsidian')">Obsidian 研究</button>
+  <button class="tab" onclick="switchTab('p-ops')">运营战略</button>
+</div>
+
+<!-- TAB: 产品远景 -->
+<div class="tab-content active" id="tab-p-vision">
+
+  <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">产品演进路线</span></div>
+  <div class="flow-wrap">
+    <div class="flow" style="grid-template-columns:repeat(4,1fr);">
+      <div class="flow-cell">
+        <div class="flow-num">v0</div>
+        <div style="font-size:12px;font-weight:600;color:var(--text-1);">CLI 工具</div>
+        <div class="body" style="margin-top:4px;text-align:left;">一个 Python 脚本。config.yaml + cron + markdown 输出。开发者的信息管道。</div>
+      </div>
+      <div class="flow-cell">
+        <div class="flow-num">v1</div>
+        <div style="font-size:12px;font-weight:600;color:var(--text-1);">开源产品</div>
+        <div class="body" style="margin-top:4px;text-align:left;">Obsidian 插件 + Docker 镜像 + Web UI 配置面板。Hacker News 冷启动。</div>
+      </div>
+      <div class="flow-cell" style="opacity:0.35;">
+        <div class="flow-num">v2</div>
+        <div style="font-size:12px;font-weight:600;color:var(--text-1);">待定</div>
+        <div class="body" style="margin-top:4px;text-align:left;">取决于 v1 的社区反馈和增长数据。可能方向：托管服务 / 垂直深耕 / 其他。</div>
+      </div>
+      <div class="flow-cell" style="opacity:0.35;">
+        <div class="flow-num">v3</div>
+        <div style="font-size:12px;font-weight:600;color:var(--text-1);">待定</div>
+        <div class="body" style="margin-top:4px;text-align:left;">取决于 v2 的商业验证。先把 v0→v1 做扎实再规划。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-head"><span class="sec-num">02</span><span class="sec-title">商业分层</span></div>
+  <div class="grid-wrap">
+    <div class="g3">
+      <div class="cell">
+        <div class="label">Layer 1</div>
+        <div class="title">开源引擎</div>
+        <div class="body">核心管线永远开源。信源采集 + 打分 + 蒸馏 + 输出。社区贡献 adapter、scorer、formatter。MIT 协议。</div>
+      </div>
+      <div class="cell" style="opacity:0.35;">
+        <div class="label">Layer 2</div>
+        <div class="title">待定</div>
+        <div class="body">可能方向：托管服务 · 免去自部署 · 统一 LLM 调用。取决于 v1 社区反馈。</div>
+      </div>
+      <div class="cell" style="opacity:0.35;">
+        <div class="label">Layer 3</div>
+        <div class="title">待定</div>
+        <div class="body">可能方向：团队版 · API 平台 · B2B。取决于商业模式验证。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-head"><span class="sec-num">03</span><span class="sec-title">产品哲学</span></div>
+  <div class="grid-wrap">
+    <div class="g2">
+      <div class="cell">
+        <div class="title">时间效率 > 信息量</div>
+        <div class="body">10 条精准推送 > 100 条噪音。Hermes 的目标是节省用户时间，不是增加阅读量。<strong>少即是多。</strong></div>
+      </div>
+      <div class="cell">
+        <div class="title">用户意志声明</div>
+        <div class="body">用户显式声明自己是谁、关心什么。算法在此基础上优化，而非从零猜测用户偏好。<strong>YAML 是用户意志的声明。</strong></div>
+      </div>
+      <div class="cell">
+        <div class="title">File over App</div>
+        <div class="body">输出是 Markdown 文件，不是被锁在某个 App 里的数据。Hermes 消失了，你的信息还在。继承 Obsidian 的 File over App 哲学。</div>
+      </div>
+      <div class="cell">
+        <div class="title">渐进复杂度</div>
+        <div class="body">新用户 5 分钟上手（默认配置 + 几个关键词）。Power user 可以写自定义 scorer、调权重、接私有信源。深度无上限。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: Feature 分类 -->
+<div class="tab-content" id="tab-p-features">
+  <div id="feat-sidebar" class="sidebar-layout">
+    <div class="sidebar">
+      <button class="sidebar-item active" onclick="showFeat(0)">核心引擎</button>
+      <button class="sidebar-item" onclick="showFeat(1)">用户画像</button>
+      <button class="sidebar-item" onclick="showFeat(2)">输出系统</button>
+      <button class="sidebar-item" onclick="showFeat(3)">反馈闭环</button>
+      <button class="sidebar-item" onclick="showFeat(4)">社区生态</button>
+      <button class="sidebar-item" onclick="showFeat(5)">托管版增值</button>
+    </div>
+    <div class="sidebar-content">
+
+      <div class="sidebar-panel active" id="feat-0">
+        <div class="label">Core Engine</div>
+        <div class="title lg">核心引擎 Features</div>
+        <div class="body" style="margin-bottom:16px;">管线的五个阶段各自的功能集。开源版完整包含。</div>
+        <div class="grid-wrap">
+          <div class="g2">
+            <div class="cell">
+              <div class="title">多信源并发采集</div>
+              <div class="body">异步 I/O · 增量抓取 · 限速重试 · 故障隔离</div>
+              <div style="margin-top:6px;"><span class="tag accent">v0</span></div>
+            </div>
+            <div class="cell">
+              <div class="title">三层打分引擎</div>
+              <div class="body">Tier 0 关键词 → Tier 1 语义 → Tier 2 深度推理</div>
+              <div style="margin-top:6px;"><span class="tag accent">v0</span></div>
+            </div>
+            <div class="cell">
+              <div class="title">跨源去重</div>
+              <div class="body">URL 精确 + MinHash/embedding 近似</div>
+              <div style="margin-top:6px;"><span class="tag accent">v0</span></div>
+            </div>
+            <div class="cell">
+              <div class="title">内容蒸馏</div>
+              <div class="body">提取式 → 生成式 → 上下文感知式</div>
+              <div style="margin-top:6px;"><span class="tag accent">v0</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-panel" id="feat-1">
+        <div class="label">Profile</div>
+        <div class="title lg">用户画像 Features</div>
+        <div class="body" style="margin-bottom:16px;">用户通过 YAML（自托管版）或 Web UI（托管版）定义画像。</div>
+        <div class="grid-wrap">
+          <div class="g2">
+            <div class="cell">
+              <div class="title">结构化身份声明</div>
+              <div class="body">角色、机构、研究阶段 — 结构化 YAML 定义</div>
+              <div style="margin-top:6px;"><span class="tag accent">v0</span></div>
+            </div>
+            <div class="cell">
+              <div class="title">兴趣领域 + 关键词</div>
+              <div class="body">每个兴趣独立配置 keywords / sources / max_daily</div>
+              <div style="margin-top:6px;"><span class="tag accent">v0</span></div>
+            </div>
+            <div class="cell">
+              <div class="title">动态画像调整</div>
+              <div class="body">基于反馈信号自动调整关键词权重和信源优先级</div>
+              <div style="margin-top:6px;"><span class="tag">v1</span></div>
+            </div>
+            <div class="cell" style="opacity:0.35;">
+              <div class="title">Web UI 画像编辑器</div>
+              <div class="body">托管版：可视化编辑替代 YAML 手写</div>
+              <div style="margin-top:6px;"><span class="tag">待定</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-panel" id="feat-2">
+        <div class="label">Output</div>
+        <div class="title lg">输出系统 Features</div>
+        <div class="grid-wrap" style="margin-top:12px;">
+          <div class="g3">
+            <div class="cell">
+              <div class="title">Obsidian vault</div>
+              <div class="body">Markdown + frontmatter + wikilinks</div>
+              <div style="margin-top:6px;"><span class="tag accent">v0</span></div>
+            </div>
+            <div class="cell">
+              <div class="title">Email digest</div>
+              <div class="body">HTML + 纯文本 · Jinja2 可自定义</div>
+              <div style="margin-top:6px;"><span class="tag accent">v0</span></div>
+            </div>
+            <div class="cell">
+              <div class="title">Telegram / Slack</div>
+              <div class="body">Bot API / webhook 推送</div>
+              <div style="margin-top:6px;"><span class="tag accent">v0</span></div>
+            </div>
+            <div class="cell">
+              <div class="title">私有 RSS feed</div>
+              <div class="body">本地 Atom 端点</div>
+              <div style="margin-top:6px;"><span class="tag">v1</span></div>
+            </div>
+            <div class="cell">
+              <div class="title">JSON API</div>
+              <div class="body">RESTful 本地端点</div>
+              <div style="margin-top:6px;"><span class="tag">v1</span></div>
+            </div>
+            <div class="cell">
+              <div class="title">Obsidian 插件</div>
+              <div class="body">原生插件 · 一键安装 · 侧边栏 feed</div>
+              <div style="margin-top:6px;"><span class="tag">v1</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-panel" id="feat-3">
+        <div class="label">Feedback</div>
+        <div class="title lg">反馈闭环 Features</div>
+        <div class="body" style="margin-bottom:12px;">用户对每日推送评价 → 系统持续自我调优。</div>
+        <div class="grid-wrap">
+          <div class="g2">
+            <div class="cell">
+              <div class="title">显式反馈</div>
+              <div class="body">&#128077;/&#128078; 标记 → EMA 权重调整</div>
+              <div style="margin-top:6px;"><span class="tag accent">v0</span></div>
+            </div>
+            <div class="cell" style="opacity:0.35;">
+              <div class="title">隐式信号</div>
+              <div class="body">是否点开原文链接 · 是否删除条目 · 停留时间（托管版）</div>
+              <div style="margin-top:6px;"><span class="tag">待定</span></div>
+            </div>
+            <div class="cell">
+              <div class="title">兴趣衰减检测</div>
+              <div class="body">连续 N 天对某领域全部 &#128078; → 自动降低权重或提示用户</div>
+              <div style="margin-top:6px;"><span class="tag">v1</span></div>
+            </div>
+            <div class="cell" style="opacity:0.35;">
+              <div class="title">新兴趣发现</div>
+              <div class="body">用户频繁点开某类内容 → 建议添加新兴趣领域</div>
+              <div style="margin-top:6px;"><span class="tag">待定</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-panel" id="feat-4">
+        <div class="label">Community</div>
+        <div class="title lg">社区生态 Features</div>
+        <div class="grid-wrap" style="margin-top:12px;">
+          <div class="g2">
+            <div class="cell">
+              <div class="title">社区 Source Adapters</div>
+              <div class="body">任何人可以写 adapter → PR 到主仓库 → 社区审核合并</div>
+              <div style="margin-top:6px;"><span class="tag">v1</span></div>
+            </div>
+            <div class="cell">
+              <div class="title">画像模板共享</div>
+              <div class="body">"PhD 电池材料"画像模板 · "VC 早期投资"模板 · 社区贡献</div>
+              <div style="margin-top:6px;"><span class="tag">v1</span></div>
+            </div>
+            <div class="cell">
+              <div class="title">自定义 Scorer 插件</div>
+              <div class="body">Python 接口 · 替换或补充默认打分逻辑</div>
+              <div style="margin-top:6px;"><span class="tag">v1</span></div>
+            </div>
+            <div class="cell" style="opacity:0.35;">
+              <div class="title">输出模板市场</div>
+              <div class="body">自定义输出模板 · 社区共享 · 多格式支持</div>
+              <div style="margin-top:6px;"><span class="tag">待定</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-panel" id="feat-5">
+        <div class="label">Cloud</div>
+        <div class="title lg">托管版增值 Features</div>
+        <div class="body" style="margin-bottom:12px;">V2/V3 待定。以下为可能方向，取决于 v1 社区反馈和增长数据。</div>
+        <div class="grid-wrap" style="opacity:0.35;">
+          <div class="g2">
+            <div class="cell">
+              <div class="title">零配置 LLM</div>
+              <div class="body">Hermes 统一调用 LLM，用户不用管 API key</div>
+            </div>
+            <div class="cell">
+              <div class="title">Web UI 画像编辑</div>
+              <div class="body">可视化配置，非技术用户友好</div>
+            </div>
+            <div class="cell">
+              <div class="title">移动端推送</div>
+              <div class="body">PWA + 原生推送通知</div>
+            </div>
+            <div class="cell">
+              <div class="title">团队版</div>
+              <div class="body">共享画像 · 团队 feed · 管理后台</div>
+            </div>
+          </div>
+        </div>
+        <div class="note" style="margin-top:8px;">以上均为假设性规划。先把 v0→v1 的开源产品做扎实，再根据真实数据决定商业化路径。</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- TAB: 增长阶段 -->
+<div class="tab-content" id="tab-p-phases">
+
+  <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">六个月路线图</span></div>
+  <div style="display:flex;flex-direction:column;gap:1px;background:var(--border);border-radius:10px;overflow:hidden;">
+
+    <div class="cell" style="display:grid;grid-template-columns:100px 1fr;gap:20px;">
+      <div>
+        <div class="label">Week 1–2</div>
+        <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text-3);">v0</div>
+      </div>
+      <div>
+        <div class="title">核心管线 MVP</div>
+        <div class="body">5 个信源 + TF-IDF 打分 + Markdown 输出。config.yaml → 跑一次 → 输出 markdown 文件。README + GIF demo。目标：让人 clone 下来 5 分钟能跑。</div>
+        <div style="margin-top:6px;"><span class="tag">Python</span><span class="tag">RSS</span><span class="tag">TF-IDF</span><span class="tag">Markdown</span></div>
+      </div>
+    </div>
+
+    <div class="cell" style="display:grid;grid-template-columns:100px 1fr;gap:20px;">
+      <div>
+        <div class="label">Week 3–4</div>
+        <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text-3);">Launch</div>
+      </div>
+      <div>
+        <div class="title">Show HN + r/selfhosted + V2EX</div>
+        <div class="body">目标：首周 500 star。关键是 README 的质量和 demo GIF 的效果。同步发 r/LocalLLaMA（Ollama 集成角度）。</div>
+        <div style="margin-top:6px;"><span class="tag accent">核心里程碑</span></div>
+      </div>
+    </div>
+
+    <div class="cell" style="display:grid;grid-template-columns:100px 1fr;gap:20px;">
+      <div>
+        <div class="label">Month 2</div>
+        <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text-3);">v0.5</div>
+      </div>
+      <div>
+        <div class="title">Obsidian 插件 + 反馈闭环</div>
+        <div class="body">Obsidian 社区插件市场上架。wikilinks 自动生成。&#128077;/&#128078; 反馈 → 权重调整。Docker Compose 一键部署。</div>
+      </div>
+    </div>
+
+    <div class="cell" style="display:grid;grid-template-columns:100px 1fr;gap:20px;">
+      <div>
+        <div class="label">Month 3–4</div>
+        <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text-3);">v1.0</div>
+      </div>
+      <div>
+        <div class="title">社区适配器生态 + 画像模板</div>
+        <div class="body">开放 adapter 贡献流程。发布 5+ 画像模板（PhD、VC、PM、crypto trader、独立开发者）。Product Hunt 发布。</div>
+      </div>
+    </div>
+
+    <div class="cell" style="display:grid;grid-template-columns:100px 1fr;gap:20px;opacity:0.35;">
+      <div>
+        <div class="label">Month 5–6</div>
+        <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text-3);">v1.x</div>
+      </div>
+      <div>
+        <div class="title">待定 — 取决于 v1 数据</div>
+        <div class="body">可能方向：托管版 beta · 垂直深耕某个用户群 · API 化 · 或继续打磨开源产品。根据前 4 个月的社区反馈和增长数据决定。</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="sec-head"><span class="sec-num">02</span><span class="sec-title">Star 增长目标</span></div>
+  <div class="grid-wrap">
+    <div class="g4">
+      <div class="cell" style="text-align:center;">
+        <div class="label">Week 1</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--text-0);">500</div>
+        <div class="body">HN + Reddit 冷启动</div>
+      </div>
+      <div class="cell" style="text-align:center;">
+        <div class="label">Month 1</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--text-0);">2K</div>
+        <div class="body">中文社区 + Obsidian 论坛</div>
+      </div>
+      <div class="cell" style="text-align:center;">
+        <div class="label">Month 3</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--text-0);">5K</div>
+        <div class="body">插件生态 + Product Hunt</div>
+      </div>
+      <div class="cell" style="text-align:center;">
+        <div class="label">Month 6</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--text-0);">10K</div>
+        <div class="body">持续口碑 + 集成生态</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: Obsidian 研究 -->
+<div class="tab-content" id="tab-p-obsidian">
+
+  <div class="callout" style="margin-bottom:20px;">Obsidian 是 Hermes 最值得研究的运营范本：7 人团队、零 VC、$25M ARR、150 万 MAU。以下是完整拆解。</div>
+
+  <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">关键数据</span></div>
+  <div class="grid-wrap">
+    <div class="g4">
+      <div class="cell" style="text-align:center;">
+        <div class="label">Team</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--text-0);">7</div>
+        <div class="body">全职成员<br>上限 10–12 人</div>
+      </div>
+      <div class="cell" style="text-align:center;">
+        <div class="label">ARR</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--text-0);">~$25M</div>
+        <div class="body">第三方估算<br>利润率极高</div>
+      </div>
+      <div class="cell" style="text-align:center;">
+        <div class="label">MAU</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--text-0);">5–10M</div>
+        <div class="body">不精确追踪<br>无用户分析</div>
+      </div>
+      <div class="cell" style="text-align:center;">
+        <div class="label">Funding</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--text-0);">$0</div>
+        <div class="body">零 VC<br>完全自举</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-head"><span class="sec-num">02</span><span class="sec-title">团队组成</span></div>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>成员</th><th>角色</th><th>背景</th></tr></thead>
+      <tbody>
+        <tr><td>Steph Ango (kepano)</td><td>CEO</td><td>前 Lumi 创始人 · 设计师 · 以 superfan 身份加入 · 2023 年成为 CEO</td></tr>
+        <tr><td>Shida Li (Licat)</td><td>Co-founder / Lead Dev</td><td>核心架构师 · Electron + 本地优先架构</td></tr>
+        <tr><td>Erica Xu (Silver)</td><td>Co-founder / Product</td><td>产品方向 · 社区运营</td></tr>
+        <tr><td>Liam</td><td>Dev</td><td>Calendar 插件作者 → 全职加入</td></tr>
+        <tr><td>Joethei</td><td>Dev / Plugin Ecosystem</td><td>插件审核 + 开发者生态</td></tr>
+        <tr><td>+2–3</td><td>Engineering</td><td>2026 年从 3 扩招到 4 名工程师</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sec-head"><span class="sec-num">03</span><span class="sec-title">运营三原则</span></div>
+  <div class="grid-wrap">
+    <div class="g3">
+      <div class="cell">
+        <div class="title">公司 ≤ 10 人</div>
+        <div class="body">Steph: "保持小团队是刻意选择。"公司不会超过 10–12 人。小团队 = 快速决策 + 低沟通成本。kepano 在大团队后发现"不好玩"。</div>
+      </div>
+      <div class="cell">
+        <div class="title">永不接受 VC</div>
+        <div class="body">VC 带来增长压力 → 与 longevity/privacy 冲突。"拒绝上百万美元需要极大毅力。"Obsidian 选择 hard mode。</div>
+      </div>
+      <div class="cell">
+        <div class="title">永不收集用户数据</div>
+        <div class="body">不做用户分析。"没人知道 Obsidian 有多少用户，包括我们自己。"Local-first = 零基础设施成本增长。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-head"><span class="sec-num">04</span><span class="sec-title">为什么能 work</span></div>
+  <div class="grid-wrap">
+    <div class="g2">
+      <div class="cell">
+        <div class="label">Architecture</div>
+        <div class="title">Local-first = 零边际成本</div>
+        <div class="body">核心功能跑在用户设备上。用户增长不增加服务器成本。唯一的云服务是可选的 Sync ($4–8/mo) 和 Publish ($8–16/mo)。</div>
+      </div>
+      <div class="cell">
+        <div class="label">Ecosystem</div>
+        <div class="title">社区插件 = 免费研发力</div>
+        <div class="body">2000+ 社区插件。等同于数百名免费开发者。Obsidian 只需维护 API 和审核流程。核心团队专注核心体验。</div>
+      </div>
+      <div class="cell">
+        <div class="label">Revenue</div>
+        <div class="title">可选付费 · 不强制</div>
+        <div class="body">核心免费。Sync / Publish / 商业授权 ($50/人/年) 共计 ~$25M ARR。用户付费是因为<strong>信任</strong>，不是因为被迫。</div>
+      </div>
+      <div class="cell">
+        <div class="label">Philosophy</div>
+        <div class="title">File over App</div>
+        <div class="body">数据是 .md 文件，不锁定。"软件是短暂的，文件比应用重要。"这个哲学建立了极深的用户信任。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-head"><span class="sec-num">05</span><span class="sec-title">创始人洞察</span></div>
+  <div class="grid-wrap">
+    <div class="g2">
+      <div class="cell">
+        <div class="title">先做用户，再做创始人</div>
+        <div class="body">Steph Ango: "我先作为粉丝，然后才成为 CEO 的。"产品决策源于自身需求。</div>
+      </div>
+      <div class="cell">
+        <div class="title">长期主义 > 快速增长</div>
+        <div class="body">"我们想做一个能存在 100 年的工具。"不追求快速增长，追求持久价值。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: 运营战略 -->
+<div class="tab-content" id="tab-p-ops">
+
+  <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">Hermes 应该从 Obsidian 学什么</span></div>
+  <div class="grid-wrap">
+    <div class="g2">
+      <div class="cell">
+        <div class="label">直接可学</div>
+        <div class="title">Local-first 架构</div>
+        <div class="body">Hermes 的核心引擎跑在用户机器上 = 零基础设施成本。用户增长不增加运营负担。跟 Obsidian 一模一样。</div>
+      </div>
+      <div class="cell">
+        <div class="label">直接可学</div>
+        <div class="title">可选付费 · 卖便利性</div>
+        <div class="body">核心免费。付费解锁<strong>便利性</strong>（不用自己搭）+ <strong>算力</strong>（LLM 调用）。数据永远属于用户。</div>
+      </div>
+      <div class="cell">
+        <div class="label">直接可学</div>
+        <div class="title">插件生态驱动增长</div>
+        <div class="body">Source adapter = Obsidian 的社区插件。社区贡献信源 → 覆盖面扩大 → 吸引更多用户 → 更多贡献者。飞轮效应。</div>
+      </div>
+      <div class="cell">
+        <div class="label">直接可学</div>
+        <div class="title">小团队 · 零会议</div>
+        <div class="body">2–3 人核心团队。GitHub PR 驱动。Discord 社区运营。不需要产品经理、不需要项目经理。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-head"><span class="sec-num">02</span><span class="sec-title">Hermes 跟 Obsidian 的关键差异</span></div>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:140px;">维度</th><th>Obsidian</th><th>Hermes</th><th>影响</th></tr></thead>
+      <tbody>
+        <tr><td>边际成本</td><td>接近零（本地 app）</td><td>有成本（LLM 调用 + 信源抓取）</td><td>托管版需要 per-user 成本管控</td></tr>
+        <tr><td>使用频率</td><td>高频（每天长时间使用）</td><td>低频（每天 2 分钟）</td><td>留存靠 value density 而非使用时间</td></tr>
+        <tr><td>插件生态</td><td>2000+ 社区插件</td><td>Source adapter 为主</td><td>生态规模可能更小但更专注</td></tr>
+        <tr><td>付费意愿</td><td>笔记 = 高价值 → 付费意愿高</td><td>信息流 = 需要证明价值</td><td>要用 quality 建立付费心智</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sec-head"><span class="sec-num">03</span><span class="sec-title">团队运营模型</span></div>
+  <div class="grid-wrap">
+    <div class="g3">
+      <div class="cell">
+        <div class="label">Phase 1 · 0–6 months</div>
+        <div class="title">2 人核心</div>
+        <div class="body">1 人写管线 + 后端<br>1 人做 README + 社区 + 托管版前端<br>兼职即可启动</div>
+      </div>
+      <div class="cell">
+        <div class="label">Phase 2 · 6–12 months</div>
+        <div class="title">3–4 人</div>
+        <div class="body">+ 1 社区运营（兼 adapter 审核）<br>+ 1 LLM/NLP 优化<br>如果有收入支撑</div>
+      </div>
+      <div class="cell">
+        <div class="label">Long term</div>
+        <div class="title">≤ 8 人</div>
+        <div class="body">学 Obsidian 的上限原则<br>每个人都是贡献者<br>不设管理层</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-head"><span class="sec-num">04</span><span class="sec-title">收入模型</span></div>
+  <div class="grid-wrap">
+    <div class="g2">
+      <div class="cell">
+        <div class="label">确定</div>
+        <div class="title">开源核心 — 永久免费</div>
+        <div class="body">
+          完整核心引擎 + 所有 adapter + 本地部署 + 社区生态。MIT 协议。这一层不会变。
+        </div>
+      </div>
+      <div class="cell" style="opacity:0.35;">
+        <div class="label">待定</div>
+        <div class="title">商业化路径</div>
+        <div class="body">
+          可能方向：托管版订阅 · 商业授权 · API 付费 · 团队版<br><br>
+          参考 Obsidian 模式（Sync $4–8/mo · Publish $8–16/mo · 商业授权 $50/人/年）——<strong>卖便利性，不卖功能锁定</strong>。具体定价和路径等 v1 跑出数据后再定。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:12px;">
+    当前阶段唯一目标：<strong>把开源产品做到 GitHub 5K+ star</strong>。商业化是 v1 之后的事。过早规划收入模型反而会分散注意力。
+  </div>
+</div>
+
+</div><!-- /page-prod -->
+
+
 </div><!-- /.board -->
 
 <script>
-function switchTab(id) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelector(`[onclick="switchTab('${id}')"]`).classList.add('active');
-  document.getElementById('tab-' + id).classList.add('active');
+/* ── Page switcher ── */
+function switchPage(id) {
+  document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelector(`[onclick="switchPage('${id}')"]`).classList.add('active');
 }
 
+/* ── Tab switcher (scoped to parent page-view) ── */
+function switchTab(id) {
+  const target = document.getElementById('tab-' + id);
+  const page = target.closest('.page-view');
+  page.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+  page.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  page.querySelector(`[onclick="switchTab('${id}')"]`).classList.add('active');
+  target.classList.add('active');
+}
+
+/* ── Pipeline step switcher ── */
 function showStep(idx) {
   const cells = document.querySelectorAll('#pipeline-flow .flow-cell');
   cells.forEach((c, i) => c.classList.toggle('active', i === idx));
@@ -772,9 +1309,16 @@ function showStep(idx) {
   });
 }
 
+/* ── Tier sidebar switcher ── */
 function showTier(idx) {
   document.querySelectorAll('#tier-sidebar .sidebar-item').forEach((s, i) => s.classList.toggle('active', i === idx));
   document.querySelectorAll('#tier-sidebar .sidebar-panel').forEach((p, i) => p.classList.toggle('active', i === idx));
+}
+
+/* ── Feature sidebar switcher ── */
+function showFeat(idx) {
+  document.querySelectorAll('#feat-sidebar .sidebar-item').forEach((s, i) => s.classList.toggle('active', i === idx));
+  document.querySelectorAll('#feat-sidebar .sidebar-panel').forEach((p, i) => p.classList.toggle('active', i === idx));
 }
 </script>
 </body>
