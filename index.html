@@ -191,15 +191,73 @@ body {
 .cap-yes { color:var(--accent); }
 .cap-no { color:var(--text-3); }
 
+/* ── Mobile ── */
 @media(max-width:860px) {
-  .board { padding:20px; }
-  .grid-2,.grid-3,.grid-5,.g2,.g3,.g4 { grid-template-columns:1fr; }
-  .flow { grid-template-columns:1fr !important; }
+  .board { padding:16px 14px 60px; }
+
+  /* Header stacks vertically */
+  .header .header-row { flex-direction:column; align-items:flex-start !important; gap:10px !important; }
+  .page-switch { width:100%; }
+  .page-btn { flex:1; text-align:center; padding:8px 10px; }
+
+  /* Tabs scroll horizontally */
+  .tabs { overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; margin-bottom:20px; }
+  .tabs::-webkit-scrollbar { display:none; }
+  .tab { white-space:nowrap; flex-shrink:0; padding:10px 14px; font-size:10.5px; }
+
+  /* Grids → single column (g4 → 2x2 for stats) */
+  .grid-2,.grid-3,.grid-5,.g2,.g3 { grid-template-columns:1fr; }
+  .g4 { grid-template-columns:1fr 1fr; }
+  .cell { padding:16px; }
+
+  /* Flow → 2 columns for compact steps, 1 col fallback */
+  .flow { grid-template-columns:1fr 1fr !important; }
+
+  /* Sidebar → horizontal scroll tabs above content */
   .sidebar-layout { grid-template-columns:1fr; }
-  .sidebar { display:flex; overflow-x:auto; gap:4px; padding:8px; }
-  .sidebar-item { white-space:nowrap; flex-shrink:0; }
+  .sidebar { display:flex; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; gap:4px; padding:8px; }
+  .sidebar::-webkit-scrollbar { display:none; }
+  .sidebar-item { white-space:nowrap; flex-shrink:0; padding:7px 12px; font-size:11px; }
+  .sidebar-content { padding:16px; }
+
+  /* Tables scroll horizontally */
+  .tbl-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .tbl { min-width:480px; }
+  .tbl th, .tbl td { padding:8px 12px; font-size:11px; }
+
+  /* Comparison header */
+  .vs-header { grid-template-columns:1fr 1fr 1fr; }
+  .vs-header .cell { padding:10px 8px; }
+  .vs-header .title { font-size:12px; }
+  .vs-header .body { font-size:10.5px; }
+
+  /* Detail panel / callout / note */
+  .detail-panel { padding:16px; }
+  .callout, .note { padding:12px 14px; font-size:11px; }
+
+  /* Section heads tighter */
+  .sec-head { margin:20px 0 10px; }
+
+  /* Pre/code blocks */
+  pre { font-size:10.5px !important; padding:14px !important; }
+
+  /* Timeline cells in growth phases */
+  .timeline-cell { grid-template-columns:1fr !important; gap:8px !important; }
+  .timeline-cell > div:first-child { display:flex; align-items:baseline; gap:10px; }
+}
+
+/* ── Small phones ── */
+@media(max-width:420px) {
+  .board { padding:12px 10px 48px; }
+  .g4 { grid-template-columns:1fr 1fr; }
+  .flow { grid-template-columns:1fr !important; }
   .vs-header { grid-template-columns:1fr; }
-  .page-switch { align-self:flex-start; }
+  .header-title { font-size:19px; }
+  .page-btn { font-size:10px; padding:7px 8px; }
+  .tab { padding:8px 10px; font-size:10px; }
+  .cell { padding:14px; }
+  .title { font-size:13px; }
+  .body { font-size:11.5px; }
 }
 </style>
 </head>
@@ -211,7 +269,7 @@ body {
 <!-- ══════════════════════════════════════════════ -->
 <div class="header">
   <div class="header-label">Knowledge Dashboard</div>
-  <div style="display:flex;align-items:center;gap:16px;margin-bottom:4px;">
+  <div class="header-row" style="display:flex;align-items:center;gap:16px;margin-bottom:4px;">
     <div class="header-title" style="margin-bottom:0;">Hermes</div>
     <div class="page-switch">
       <button class="page-btn active" onclick="switchPage('arch')">技术架构</button>
@@ -996,7 +1054,7 @@ Source: [HN](https://news.ycombinator.com/item?id=40123456)
   <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">六个月路线图</span></div>
   <div style="display:flex;flex-direction:column;gap:1px;background:var(--border);border-radius:10px;overflow:hidden;">
 
-    <div class="cell" style="display:grid;grid-template-columns:100px 1fr;gap:20px;">
+    <div class="cell timeline-cell" style="display:grid;grid-template-columns:100px 1fr;gap:20px;">
       <div>
         <div class="label">Week 1–2</div>
         <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text-3);">v0</div>
@@ -1008,7 +1066,7 @@ Source: [HN](https://news.ycombinator.com/item?id=40123456)
       </div>
     </div>
 
-    <div class="cell" style="display:grid;grid-template-columns:100px 1fr;gap:20px;">
+    <div class="cell timeline-cell" style="display:grid;grid-template-columns:100px 1fr;gap:20px;">
       <div>
         <div class="label">Week 3–4</div>
         <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text-3);">Launch</div>
@@ -1020,7 +1078,7 @@ Source: [HN](https://news.ycombinator.com/item?id=40123456)
       </div>
     </div>
 
-    <div class="cell" style="display:grid;grid-template-columns:100px 1fr;gap:20px;">
+    <div class="cell timeline-cell" style="display:grid;grid-template-columns:100px 1fr;gap:20px;">
       <div>
         <div class="label">Month 2</div>
         <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text-3);">v0.5</div>
@@ -1031,7 +1089,7 @@ Source: [HN](https://news.ycombinator.com/item?id=40123456)
       </div>
     </div>
 
-    <div class="cell" style="display:grid;grid-template-columns:100px 1fr;gap:20px;">
+    <div class="cell timeline-cell" style="display:grid;grid-template-columns:100px 1fr;gap:20px;">
       <div>
         <div class="label">Month 3–4</div>
         <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text-3);">v1.0</div>
@@ -1042,7 +1100,7 @@ Source: [HN](https://news.ycombinator.com/item?id=40123456)
       </div>
     </div>
 
-    <div class="cell" style="display:grid;grid-template-columns:100px 1fr;gap:20px;opacity:0.35;">
+    <div class="cell timeline-cell" style="display:grid;grid-template-columns:100px 1fr;gap:20px;opacity:0.35;">
       <div>
         <div class="label">Month 5–6</div>
         <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text-3);">v1.x</div>
