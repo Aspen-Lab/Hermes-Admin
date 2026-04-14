@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hermes — Technical Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08080a;
+  --surface: #0e0e11;
+  --surface-2: #141417;
+  --border: rgba(255,255,255,0.05);
+  --border-hover: rgba(255,255,255,0.08);
+  --text-0: #fff;
+  --text-1: rgba(255,255,255,0.92);
+  --text-2: rgba(255,255,255,0.62);
+  --text-3: rgba(255,255,255,0.40);
+  --accent: #f59e0b;
+  --accent-dim: rgba(245,158,11,0.12);
+  --mute: rgba(255,255,255,0.03);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.mono { font-family: 'DM Mono', monospace; }
+
+/* ── Board ── */
+.board { max-width: 1200px; margin: 0 auto; padding: 32px 36px 80px; }
+
+/* ── Header ── */
+.header { margin-bottom: 28px; }
+.header-label { font-family:'DM Mono',monospace; font-size:9.5px; letter-spacing:0.7px; text-transform:uppercase; color:var(--text-3); margin-bottom:6px; }
+.header-title { font-size:22px; font-weight:700; color:var(--text-0); margin-bottom:4px; }
+.header-sub { font-size:12.5px; color:var(--text-2); max-width:700px; }
+
+/* ── Tabs ── */
+.tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:28px; }
+.tab {
+  background:none; border:none; border-bottom:2px solid transparent;
+  padding:10px 18px; cursor:pointer;
+  font-family:'DM Mono',monospace; font-size:11px; font-weight:500;
+  color:var(--text-3); transition:all 0.15s;
+}
+.tab:hover { color:var(--text-2); }
+.tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+
+/* ── Grid containers (1px gap technique) ── */
+.grid-wrap { background:var(--border); border-radius:10px; overflow:hidden; }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1px; }
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; }
+.grid-5 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; gap:1px; }
+.cell { background:var(--surface); padding:20px; transition:background 0.15s; }
+.cell:hover { background:var(--surface-2); }
+
+/* ── Text hierarchy ── */
+.label { font-family:'DM Mono',monospace; font-size:9.5px; letter-spacing:0.7px; text-transform:uppercase; color:var(--text-3); margin-bottom:6px; }
+.title { font-size:14px; font-weight:600; color:var(--text-0); margin-bottom:4px; line-height:1.35; }
+.title.lg { font-size:16px; }
+.body { font-size:12px; color:var(--text-2); line-height:1.6; }
+.body strong { color:var(--text-1); font-weight:500; }
+
+/* ── Section headers ── */
+.sec-head { margin:28px 0 12px; display:flex; align-items:baseline; gap:10px; }
+.sec-num { font-family:'DM Mono',monospace; font-size:10px; color:var(--accent); opacity:0.8; }
+.sec-title { font-size:14px; font-weight:600; color:var(--text-0); }
+
+/* ── Flow strip ── */
+.flow-wrap { background:var(--border); border-radius:10px; overflow:hidden; }
+.flow { display:grid; grid-template-columns:repeat(5,1fr); gap:1px; }
+.flow-cell { background:var(--surface); padding:16px 18px; text-align:center; transition:background 0.15s; cursor:pointer; }
+.flow-cell:hover { background:var(--surface-2); }
+.flow-cell.active { background:var(--accent-dim); }
+.flow-num { font-family:'DM Mono',monospace; font-size:20px; font-weight:500; color:var(--text-3); margin-bottom:4px; }
+.flow-cell.active .flow-num { color:var(--accent); }
+.flow-label { font-size:12px; font-weight:600; color:var(--text-1); }
+.flow-cell.active .flow-label { color:var(--text-0); }
+
+/* ── Detail panel ── */
+.detail-panel {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:24px;
+  margin-top:8px;
+}
+
+/* ── Callout ── */
+.callout {
+  background:var(--surface-2);
+  border-left:2px solid var(--accent);
+  border-radius:0 8px 8px 0;
+  padding:14px 18px;
+  font-style:italic;
+  color:var(--text-1);
+  font-size:12px;
+  line-height:1.6;
+}
+.note {
+  background:var(--mute);
+  border-radius:8px;
+  padding:14px 18px;
+  color:var(--text-2);
+  font-size:11.5px;
+  line-height:1.6;
+}
+
+/* ── Tag ── */
+.tag {
+  display:inline-block;
+  font-family:'DM Mono',monospace;
+  font-size:10px;
+  padding:2px 8px;
+  background:var(--mute);
+  border-radius:4px;
+  color:var(--text-3);
+  margin-right:4px;
+  margin-bottom:4px;
+}
+.tag.accent { background:var(--accent-dim); color:var(--accent); }
+
+/* ── Table ── */
+.tbl-wrap { background:var(--border); border-radius:10px; overflow:hidden; }
+.tbl { width:100%; border-collapse:separate; border-spacing:0; }
+.tbl th {
+  background:var(--surface-2);
+  font-family:'DM Mono',monospace;
+  font-size:10px;
+  letter-spacing:0.5px;
+  text-transform:uppercase;
+  color:var(--text-3);
+  font-weight:500;
+  text-align:left;
+  padding:10px 16px;
+}
+.tbl td {
+  background:var(--surface);
+  font-size:12px;
+  color:var(--text-2);
+  padding:10px 16px;
+  border-top:1px solid var(--border);
+}
+.tbl td:first-child { color:var(--text-1); font-weight:500; }
+
+/* ── Sidebar layout ── */
+.sidebar-layout { display:grid; grid-template-columns:180px 1fr; gap:1px; background:var(--border); border-radius:10px; overflow:hidden; }
+.sidebar { background:var(--surface); padding:12px; }
+.sidebar-item {
+  display:block;
+  width:100%;
+  background:none; border:none; text-align:left;
+  padding:8px 12px;
+  border-radius:6px;
+  cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  font-size:12px;
+  font-weight:500;
+  color:var(--text-3);
+  transition:all 0.15s;
+  margin-bottom:2px;
+}
+.sidebar-item:hover { color:var(--text-2); }
+.sidebar-item.active { background:var(--accent-dim); color:var(--accent); }
+.sidebar-content { background:var(--surface); padding:24px; }
+.sidebar-panel { display:none; }
+.sidebar-panel.active { display:block; }
+
+/* ── Comparison columns ── */
+.vs-header { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; }
+.vs-header .cell { text-align:center; padding:14px 18px; }
+.capability-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; }
+.capability-row .cell { padding:12px 18px; }
+.cap-yes { color:var(--accent); }
+.cap-no { color:var(--text-3); }
+
+@media(max-width:860px) {
+  .board { padding:20px; }
+  .grid-2,.grid-3,.grid-5 { grid-template-columns:1fr; }
+  .flow { grid-template-columns:1fr; }
+  .sidebar-layout { grid-template-columns:1fr; }
+  .sidebar { display:flex; overflow-x:auto; gap:4px; padding:8px; }
+  .sidebar-item { white-space:nowrap; flex-shrink:0; }
+  .vs-header,.capability-row { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+<div class="board">
+
+<!-- Header -->
+<div class="header">
+  <div class="header-label">Technical Architecture &middot; Thinking Surface</div>
+  <div class="header-title">Hermes &#25216;&#26415;&#21407;&#29702;&#19982;&#23454;&#29616;</div>
+  <div class="header-sub">五阶段数据管线 · 三层渐进增强架构 · 可插拔信源与输出 · 零 LLM 依赖也能运行</div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('overview')">系统总览</button>
+  <button class="tab" onclick="switchTab('pipeline')">数据管线</button>
+  <button class="tab" onclick="switchTab('tiers')">三层架构</button>
+  <button class="tab" onclick="switchTab('sources')">信源系统</button>
+  <button class="tab" onclick="switchTab('output')">输出与反馈</button>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- TAB: 系统总览                           -->
+<!-- ═══════════════════════════════════════ -->
+<div class="tab-content active" id="tab-overview">
+
+  <!-- Architecture flow -->
+  <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">执行流程</span></div>
+  <div class="flow-wrap">
+    <div class="flow">
+      <div class="flow-cell"><div class="flow-num">1</div><div class="flow-label">信源采集</div></div>
+      <div class="flow-cell"><div class="flow-num">2</div><div class="flow-label">相关性打分</div></div>
+      <div class="flow-cell"><div class="flow-num">3</div><div class="flow-label">去重聚合</div></div>
+      <div class="flow-cell"><div class="flow-num">4</div><div class="flow-label">内容蒸馏</div></div>
+      <div class="flow-cell"><div class="flow-num">5</div><div class="flow-label">格式化输出</div></div>
+    </div>
+  </div>
+  <div class="note" style="margin-top:8px;">每次 <code class="mono" style="font-size:11px;color:var(--text-1)">hermes run</code> 按顺序执行上述五步。cron 定时触发，每步输出下一步的输入。单步失败不阻塞后续步骤。</div>
+
+  <!-- Design decisions -->
+  <div class="sec-head"><span class="sec-num">02</span><span class="sec-title">核心设计决策</span></div>
+  <div class="grid-wrap">
+    <div class="grid-2">
+      <div class="cell">
+        <div class="label">Architecture</div>
+        <div class="title">无状态管线</div>
+        <div class="body">每次运行完全独立。持久状态仅两处：<strong>config.yaml</strong>（用户画像）和 <strong>SQLite</strong>（历史 item ID + 反馈信号）。无需数据库服务。</div>
+      </div>
+      <div class="cell">
+        <div class="label">Degradation</div>
+        <div class="title">渐进增强</div>
+        <div class="body">Tier 0 → 1 → 2 逐层解锁能力。每层独立可用。用户按需选择或由系统根据资源自动切换。</div>
+      </div>
+      <div class="cell">
+        <div class="label">Reliability</div>
+        <div class="title">故障隔离</div>
+        <div class="body">每个信源适配器独立 try/catch。单源超时或报错不影响其他信源。LLM 调用也独立隔离。</div>
+      </div>
+      <div class="cell">
+        <div class="label">Cost Control</div>
+        <div class="title">Token 预算机制</div>
+        <div class="body">每日 API 调用有 token 上限（用户在 YAML 中配置）。超限自动降级到本地模型或规则引擎。避免账单失控。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech stack overview -->
+  <div class="sec-head"><span class="sec-num">03</span><span class="sec-title">技术栈一览</span></div>
+  <div class="grid-wrap">
+    <div class="grid-3">
+      <div class="cell">
+        <div class="label">Language</div>
+        <div class="title">Python 3.10+</div>
+        <div class="body">asyncio 异步架构。类型注解。单一 requirements.txt。</div>
+      </div>
+      <div class="cell">
+        <div class="label">Storage</div>
+        <div class="title">SQLite + YAML</div>
+        <div class="body">config.yaml 存用户画像。SQLite 存历史 ID + 反馈。零运维。</div>
+      </div>
+      <div class="cell">
+        <div class="label">Deployment</div>
+        <div class="title">Docker / pip / bare</div>
+        <div class="body"><code class="mono" style="font-size:11px;">docker compose up</code> 或 <code class="mono" style="font-size:11px;">pip install hermes-news</code>。树莓派可跑。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- TAB: 数据管线                           -->
+<!-- ═══════════════════════════════════════ -->
+<div class="tab-content" id="tab-pipeline">
+
+  <!-- Interactive flow -->
+  <div class="flow-wrap">
+    <div class="flow" id="pipeline-flow">
+      <div class="flow-cell active" onclick="showStep(0)"><div class="flow-num">1</div><div class="flow-label">信源采集</div></div>
+      <div class="flow-cell" onclick="showStep(1)"><div class="flow-num">2</div><div class="flow-label">相关性打分</div></div>
+      <div class="flow-cell" onclick="showStep(2)"><div class="flow-num">3</div><div class="flow-label">去重聚合</div></div>
+      <div class="flow-cell" onclick="showStep(3)"><div class="flow-num">4</div><div class="flow-label">内容蒸馏</div></div>
+      <div class="flow-cell" onclick="showStep(4)"><div class="flow-num">5</div><div class="flow-label">格式化输出</div></div>
+    </div>
+  </div>
+
+  <!-- Step details -->
+  <div id="step-panels">
+
+    <!-- Step 1 -->
+    <div class="detail-panel" id="step-0" style="display:block;">
+      <div class="label">Step 1</div>
+      <div class="title lg">信源采集 — 从全网拉取原始内容</div>
+      <div class="body" style="margin-bottom:16px;">cron 触发后，Hermes 并发调用所有已配置的 source adapter，每个 adapter 实现标准化的 <code class="mono" style="font-size:11px;color:var(--text-1)">fetch() + parse()</code> 接口。</div>
+      <div class="grid-wrap">
+        <div class="grid-2">
+          <div class="cell">
+            <div class="label">Process</div>
+            <div class="title">执行逻辑</div>
+            <div class="body">
+              异步并发调用所有 adapter<br>
+              统一输出格式：title, body, url, date, metadata<br>
+              内置限速 + 重试 + 单源失败隔离
+            </div>
+          </div>
+          <div class="cell">
+            <div class="label">Stack</div>
+            <div class="title">依赖组件</div>
+            <div class="body">
+              <span class="tag">aiohttp</span>
+              <span class="tag">feedparser</span>
+              <span class="tag">arxiv API</span>
+              <span class="tag">Reddit JSON</span>
+              <span class="tag">Playwright (可选)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="detail-panel" id="step-1">
+      <div class="label">Step 2</div>
+      <div class="title lg">相关性打分 — 基于用户画像计算 0–1 分数</div>
+      <div class="body" style="margin-bottom:16px;">每条 Item 过打分引擎，得到一个 0–1 的 relevance score。低于阈值的直接丢弃。打分方式取决于当前运行的 Tier。</div>
+      <div class="grid-wrap">
+        <div class="grid-3">
+          <div class="cell">
+            <div class="label">Tier 0</div>
+            <div class="title">关键词打分</div>
+            <div class="body">TF-IDF 向量化 + 关键词权重匹配 + 正则表达式规则。纯 CPU，毫秒级。</div>
+          </div>
+          <div class="cell">
+            <div class="label">Tier 1</div>
+            <div class="title">语义打分</div>
+            <div class="body">本地 embedding 模型做语义相似度。"固态电池"="全固态电池"。需 GPU 或 CPU 推理。</div>
+          </div>
+          <div class="cell">
+            <div class="label">Tier 2</div>
+            <div class="title">深度推理</div>
+            <div class="body">云端 LLM 理解用户身份 + 研究阶段 + 上下文，判断"这条对这个人重要吗"。最准但有成本。</div>
+          </div>
+        </div>
+      </div>
+      <div class="note" style="margin-top:8px;">
+        多信号融合公式：<code class="mono" style="font-size:11px;color:var(--text-1)">score = keyword×0.4 + semantic×0.4 + recency×0.1 + source_trust×0.1</code>。权重可在 YAML 中覆盖。
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="detail-panel" id="step-2">
+      <div class="label">Step 3</div>
+      <div class="title lg">去重聚合 — 合并同一话题的多源内容</div>
+      <div class="body" style="margin-bottom:16px;">同一条新闻可能同时出现在 arXiv、HN、和 RSS 三个地方。这一步把它们合并为一个 cluster。</div>
+      <div class="grid-wrap">
+        <div class="grid-2">
+          <div class="cell">
+            <div class="label">Dedup</div>
+            <div class="title">两层去重</div>
+            <div class="body">
+              <strong>精确去重：</strong>URL 标准化后比对<br>
+              <strong>近似去重：</strong>MinHash (Tier 0) 或 embedding 余弦相似度 > 0.85 (Tier 1+)
+            </div>
+          </div>
+          <div class="cell">
+            <div class="label">Cluster</div>
+            <div class="title">聚合策略</div>
+            <div class="body">
+              同话题内容聚为一个 cluster<br>
+              选最高分 item 作为代表<br>
+              保留所有源链接供深入阅读
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="detail-panel" id="step-3">
+      <div class="label">Step 4</div>
+      <div class="title lg">内容蒸馏 — 生成摘要与解读</div>
+      <div class="body" style="margin-bottom:16px;">根据 Tier 选择不同的摘要生成策略。</div>
+      <div class="grid-wrap">
+        <div class="grid-3">
+          <div class="cell">
+            <div class="label">Tier 0</div>
+            <div class="title">提取式</div>
+            <div class="body">取前 N 句 + 关键词高亮。无需模型。</div>
+          </div>
+          <div class="cell">
+            <div class="label">Tier 1</div>
+            <div class="title">生成式</div>
+            <div class="body">本地 LLM 生成一段话摘要 + "为什么跟你相关"。</div>
+          </div>
+          <div class="cell">
+            <div class="label">Tier 2</div>
+            <div class="title">上下文感知</div>
+            <div class="body">云端 LLM 结合用户画像生成个性化摘要 + 跨语言翻译。</div>
+          </div>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:8px;">输出结构：title / summary / relevance_note / source_url / score — 每条 item 统一格式，供下游 formatter 消费。</div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="detail-panel" id="step-4">
+      <div class="label">Step 5</div>
+      <div class="title lg">格式化输出 — 渲染为最终输出</div>
+      <div class="body" style="margin-bottom:16px;">蒸馏后的内容经 formatter 渲染为用户选择的最终输出。</div>
+      <div class="grid-wrap">
+        <div class="grid-3">
+          <div class="cell">
+            <div class="label">Primary</div>
+            <div class="title">Obsidian</div>
+            <div class="body">Markdown + frontmatter + [[wikilinks]] + tags。直接写入 vault 目录。</div>
+          </div>
+          <div class="cell">
+            <div class="label">Messaging</div>
+            <div class="title">Email / TG / Slack</div>
+            <div class="body">HTML 邮件模板 · Telegram Bot API · Slack webhook。</div>
+          </div>
+          <div class="cell">
+            <div class="label">API</div>
+            <div class="title">RSS / JSON</div>
+            <div class="body">生成私有 Atom feed 或本地 RESTful 端点，供其他工具订阅。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- TAB: 三层架构                           -->
+<!-- ═══════════════════════════════════════ -->
+<div class="tab-content" id="tab-tiers">
+
+  <!-- Tier comparison header -->
+  <div class="grid-wrap" style="margin-bottom:8px;">
+    <div class="vs-header">
+      <div class="cell" style="text-align:center;">
+        <div class="label">Tier 0</div>
+        <div class="title">规则引擎</div>
+        <div class="body">零依赖 · $0</div>
+      </div>
+      <div class="cell" style="text-align:center;">
+        <div class="label">Tier 1</div>
+        <div class="title">本地大模型</div>
+        <div class="body">Ollama · $0</div>
+      </div>
+      <div class="cell" style="text-align:center;">
+        <div class="label">Tier 2</div>
+        <div class="title">云端 API</div>
+        <div class="body">BYOK · ~$0.05/天</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Capability matrix -->
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead>
+        <tr><th style="width:160px;">能力</th><th>Tier 0</th><th>Tier 1</th><th>Tier 2</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>打分方式</td>
+          <td>TF-IDF + 关键词权重</td>
+          <td>语义 embedding 相似度</td>
+          <td>LLM 深度推理</td>
+        </tr>
+        <tr>
+          <td>摘要方式</td>
+          <td>提取前 N 句</td>
+          <td>LLM 生成式摘要</td>
+          <td>画像感知个性化摘要</td>
+        </tr>
+        <tr>
+          <td>语义理解</td>
+          <td class="cap-no">&#10007;</td>
+          <td class="cap-yes">&#10003;</td>
+          <td class="cap-yes">&#10003;</td>
+        </tr>
+        <tr>
+          <td>跨语言翻译</td>
+          <td class="cap-no">&#10007;</td>
+          <td class="cap-yes">&#10003; 基础</td>
+          <td class="cap-yes">&#10003; 高质量</td>
+        </tr>
+        <tr>
+          <td>完全离线</td>
+          <td class="cap-yes">&#10003;</td>
+          <td class="cap-yes">&#10003;</td>
+          <td class="cap-no">&#10007;</td>
+        </tr>
+        <tr>
+          <td>硬件需求</td>
+          <td>Python 3.10+ · 50MB RAM</td>
+          <td>8GB VRAM 或 16GB RAM</td>
+          <td>API Key</td>
+        </tr>
+        <tr>
+          <td>延迟/条</td>
+          <td>&lt; 10ms</td>
+          <td>1–5s</td>
+          <td>2–8s</td>
+        </tr>
+        <tr>
+          <td>适合场景</td>
+          <td>离线 · 低资源 · 简单兴趣</td>
+          <td>隐私优先 · 中等硬件</td>
+          <td>追求最佳效果 · 复杂画像</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Component details per tier -->
+  <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">各层核心组件</span></div>
+
+  <div id="tier-sidebar" class="sidebar-layout">
+    <div class="sidebar">
+      <button class="sidebar-item active" onclick="showTier(0)">Tier 0 · 规则</button>
+      <button class="sidebar-item" onclick="showTier(1)">Tier 1 · 本地</button>
+      <button class="sidebar-item" onclick="showTier(2)">Tier 2 · 云端</button>
+    </div>
+    <div class="sidebar-content">
+
+      <div class="sidebar-panel active" id="tier-0">
+        <div class="title">Tier 0 — 纯规则引擎</div>
+        <div class="body" style="margin-bottom:14px;">零外部模型依赖。纯算法 + 标准库 + 轻量 pip 包。</div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>组件</th><th>作用</th></tr></thead>
+            <tbody>
+              <tr><td>TfidfVectorizer</td><td>TF-IDF 向量化 + 余弦相似度打分</td></tr>
+              <tr><td>re (stdlib)</td><td>正则规则匹配</td></tr>
+              <tr><td>datasketch</td><td>MinHash 近似去重</td></tr>
+              <tr><td>Jinja2</td><td>输出模板渲染</td></tr>
+              <tr><td>schedule / crontab</td><td>定时调度</td></tr>
+              <tr><td>sqlite3 (stdlib)</td><td>历史记录 + 反馈存储</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="sidebar-panel" id="tier-1">
+        <div class="title">Tier 1 — 本地大模型</div>
+        <div class="body" style="margin-bottom:14px;">在 Tier 0 基础上叠加本地 LLM 推理能力。数据不出本机。</div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>组件</th><th>作用</th></tr></thead>
+            <tbody>
+              <tr><td>Ollama / llama.cpp</td><td>本地 LLM 推理服务</td></tr>
+              <tr><td>sentence-transformers</td><td>文本 embedding 生成</td></tr>
+              <tr><td>Llama 3.2 / Qwen 2.5 / Phi-4</td><td>摘要生成 + 语义理解</td></tr>
+              <tr><td>所有 Tier 0 组件</td><td>基础设施复用</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="sidebar-panel" id="tier-2">
+        <div class="title">Tier 2 — 云端 API (BYOK)</div>
+        <div class="body" style="margin-bottom:14px;">用户自带 API Key，Hermes 不存储不转发。密钥从环境变量或 config.yaml 读取。</div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>组件</th><th>作用</th></tr></thead>
+            <tbody>
+              <tr><td>OpenAI / Anthropic SDK</td><td>云端 LLM 调用</td></tr>
+              <tr><td>结构化 prompt 模板</td><td>画像注入 + JSON 输出格式控制</td></tr>
+              <tr><td>token 预算管理器</td><td>每日 API 成本上限 + 自动降级</td></tr>
+              <tr><td>缓存层</td><td>相似画像共享结果，降低调用量</td></tr>
+              <tr><td>所有 Tier 0 + 1 组件</td><td>基础设施复用</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- TAB: 信源系统                           -->
+<!-- ═══════════════════════════════════════ -->
+<div class="tab-content" id="tab-sources">
+
+  <div class="body" style="margin-bottom:20px;max-width:600px;">可插拔的 Source Adapter 系统。每个适配器继承 <code class="mono" style="font-size:11px;color:var(--text-1)">BaseSource</code>，实现 <code class="mono" style="font-size:11px;color:var(--text-1)">fetch()</code> + <code class="mono" style="font-size:11px;color:var(--text-1)">parse()</code>。放入 <code class="mono" style="font-size:11px;color:var(--text-1)">sources/</code> 目录自动发现。</div>
+
+  <!-- Source table by category -->
+  <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">内置信源适配器</span></div>
+
+  <div class="tbl-wrap" style="margin-bottom:16px;">
+    <table class="tbl">
+      <thead><tr><th>类别</th><th>信源</th><th>接入方式</th><th>限速</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="3" style="vertical-align:top;">学术</td><td>arXiv</td><td>arXiv API</td><td>无限制</td></tr>
+        <tr><td>Semantic Scholar</td><td>REST API</td><td>100 req/s</td></tr>
+        <tr><td>PubMed</td><td>E-utilities</td><td>3 req/s (无 key)</td></tr>
+        <tr><td rowspan="1" style="vertical-align:top;">开放数据</td><td>OpenAlex</td><td>REST API</td><td>100K/天</td></tr>
+        <tr><td rowspan="4" style="vertical-align:top;">社区</td><td>Hacker News</td><td>Algolia API</td><td>无限制</td></tr>
+        <tr><td>Reddit</td><td>JSON (.json)</td><td>60 req/min</td></tr>
+        <tr><td>Lobsters</td><td>RSS</td><td>—</td></tr>
+        <tr><td>V2EX</td><td>API / RSS</td><td>—</td></tr>
+        <tr><td rowspan="2" style="vertical-align:top;">新闻</td><td>任意 RSS/Atom</td><td>feedparser</td><td>—</td></tr>
+        <tr><td>自定义 URL</td><td>Playwright 抓取</td><td>自定义</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Adapter interface -->
+  <div class="sec-head"><span class="sec-num">02</span><span class="sec-title">自定义适配器接口</span></div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+    <div style="padding:8px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);">
+      <span class="mono" style="font-size:10px;color:var(--text-3);">sources/my_custom_source.py</span>
+    </div>
+    <pre style="padding:18px;font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.8;color:var(--text-2);margin:0;overflow-x:auto;"><span style="color:var(--text-3)">from</span> hermes.sources <span style="color:var(--text-3)">import</span> BaseSource, Item
+
+<span style="color:var(--text-3)">class</span> <span style="color:var(--text-0)">MySource</span>(BaseSource):
+    name = <span style="color:var(--accent)">"my_custom_source"</span>
+
+    <span style="color:var(--text-3)">async def</span> <span style="color:var(--text-0)">fetch</span>(self) -> list[dict]:
+        resp = <span style="color:var(--text-3)">await</span> self.http.get(<span style="color:var(--accent)">"https://..."</span>)
+        <span style="color:var(--text-3)">return</span> resp.json()[<span style="color:var(--accent)">"items"</span>]
+
+    <span style="color:var(--text-3)">def</span> <span style="color:var(--text-0)">parse</span>(self, raw: dict) -> Item:
+        <span style="color:var(--text-3)">return</span> Item(
+            title=raw[<span style="color:var(--accent)">"title"</span>],
+            body=raw[<span style="color:var(--accent)">"content"</span>],
+            url=raw[<span style="color:var(--accent)">"link"</span>],
+            date=raw[<span style="color:var(--accent)">"published"</span>],
+        )</pre>
+  </div>
+
+  <div class="note" style="margin-top:8px;">适配器放入 <code class="mono" style="font-size:11px;color:var(--text-1)">sources/</code> 目录后自动注册。无需修改核心代码。Hermes 启动时通过模块扫描发现所有 BaseSource 子类。</div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- TAB: 输出与反馈                         -->
+<!-- ═══════════════════════════════════════ -->
+<div class="tab-content" id="tab-output">
+
+  <!-- Output formats -->
+  <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">输出格式</span></div>
+  <div class="grid-wrap">
+    <div class="grid-3">
+      <div class="cell">
+        <div class="tag accent">primary</div>
+        <div class="title" style="margin-top:6px;">Obsidian</div>
+        <div class="body">Markdown + frontmatter (date, tags) + [[wikilinks]] 自动生成。直接写入 vault 目录。</div>
+      </div>
+      <div class="cell">
+        <div class="label">Messaging</div>
+        <div class="title">Email</div>
+        <div class="body">HTML + 纯文本双格式。Jinja2 模板可自定义。SMTP 直发或 SendGrid。</div>
+      </div>
+      <div class="cell">
+        <div class="label">Messaging</div>
+        <div class="title">Telegram / Slack</div>
+        <div class="body">Bot API 或 Incoming Webhook。支持 inline 反馈按钮。</div>
+      </div>
+    </div>
+  </div>
+  <div class="grid-wrap" style="margin-top:1px;">
+    <div class="grid-2">
+      <div class="cell">
+        <div class="label">Feed</div>
+        <div class="title">私有 RSS/Atom</div>
+        <div class="body">生成标准 Atom feed。可被 Reeder、Feedly 等任何阅读器订阅。</div>
+      </div>
+      <div class="cell">
+        <div class="label">API</div>
+        <div class="title">JSON RESTful</div>
+        <div class="body">本地 HTTP 端点。<code class="mono" style="font-size:11px;">GET /api/today</code> 返回当日简报。供任何自定义集成消费。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Obsidian deep dive -->
+  <div class="sec-head"><span class="sec-num">02</span><span class="sec-title">Obsidian 集成细节</span></div>
+  <div class="grid-wrap">
+    <div class="grid-2">
+      <div class="cell">
+        <div class="label">Write</div>
+        <div class="title">写入逻辑</div>
+        <div class="body">
+          每日生成 <code class="mono" style="font-size:11px;color:var(--text-1)">YYYY-MM-DD.md</code><br>
+          Frontmatter: date, tags, sources<br>
+          按兴趣领域分 H2 段落<br>
+          每条附 relevance score + 原文链接
+        </div>
+      </div>
+      <div class="cell">
+        <div class="label">Link</div>
+        <div class="title">智能 Wikilinks</div>
+        <div class="body">
+          扫描 vault 已有笔记标题<br>
+          自动生成 [[wikilinks]] 到相关笔记<br>
+          新概念自动创建 stub 笔记
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback loop -->
+  <div class="sec-head"><span class="sec-num">03</span><span class="sec-title">反馈闭环</span></div>
+  <div class="flow-wrap">
+    <div class="flow" style="grid-template-columns:repeat(4,1fr);">
+      <div class="flow-cell"><div class="flow-num">1</div><div class="flow-label">用户在笔记中<br>标记 &#128077;/&#128078;</div></div>
+      <div class="flow-cell"><div class="flow-num">2</div><div class="flow-label">下次 run 时<br>读取反馈</div></div>
+      <div class="flow-cell"><div class="flow-num">3</div><div class="flow-label">调整关键词权重<br>+ 信源优先级</div></div>
+      <div class="flow-cell"><div class="flow-num">4</div><div class="flow-label">后续推送<br>更精准</div></div>
+    </div>
+  </div>
+  <div class="note" style="margin-top:8px;">反馈信号存入 SQLite。权重调整采用指数移动平均（EMA），避免单次反馈过度修正。用户也可在 config.yaml 中手动覆盖任何自动调整。</div>
+
+  <!-- Obsidian note example -->
+  <div class="sec-head"><span class="sec-num">04</span><span class="sec-title">输出示例</span></div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+    <div style="padding:8px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);">
+      <span class="mono" style="font-size:10px;color:var(--text-3);">~/obsidian/hermes/2026-04-13.md</span>
+    </div>
+    <pre style="padding:18px;font-family:'DM Mono',monospace;font-size:11px;line-height:1.8;color:var(--text-2);margin:0;overflow-x:auto;"><span style="color:var(--text-3)">---</span>
+<span style="color:var(--accent)">date</span>: 2026-04-13
+<span style="color:var(--accent)">tags</span>: [hermes/daily, cathode, AI-tooling]
+<span style="color:var(--text-3)">---</span>
+
+<span style="color:var(--text-0)">## Cathode Research</span>
+
+<span style="color:var(--text-1)">### Sulfide electrolyte hits 4.2 mS/cm</span>
+KAIST &#22242;&#38431;&#23637;&#31034; Li&#8326;PS&#8325;Cl&#8320;.&#8325;Br&#8320;.&#8325; ...
+<span style="color:var(--text-3)">Relevance: directly relevant to [[Solid-State Thesis]]</span>
+Source: [arXiv 2604.08821](https://arxiv.org/abs/2604.08821)
+<span style="color:var(--text-3)">&#128077; / &#128078;</span>
+
+<span style="color:var(--text-0)">## AI/ML Tooling</span>
+
+<span style="color:var(--text-1)">### &#24320;&#28304;&#39046;&#22495;&#24494;&#35843;&#24037;&#20855;&#21253;</span>
+MIT &#21327;&#35758;&#30340; RLHF &#24037;&#20855;&#21253; ...
+<span style="color:var(--text-3)">Relevance: connects to [[LLM Research Notes]]</span>
+Source: [HN](https://news.ycombinator.com/item?id=40123456)
+<span style="color:var(--text-3)">&#128077; / &#128078;</span></pre>
+  </div>
+</div>
+
+</div><!-- /.board -->
+
+<script>
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[onclick="switchTab('${id}')"]`).classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+
+function showStep(idx) {
+  const cells = document.querySelectorAll('#pipeline-flow .flow-cell');
+  cells.forEach((c, i) => c.classList.toggle('active', i === idx));
+  document.querySelectorAll('#step-panels .detail-panel').forEach((p, i) => {
+    p.style.display = i === idx ? 'block' : 'none';
+  });
+}
+
+function showTier(idx) {
+  document.querySelectorAll('#tier-sidebar .sidebar-item').forEach((s, i) => s.classList.toggle('active', i === idx));
+  document.querySelectorAll('#tier-sidebar .sidebar-panel').forEach((p, i) => p.classList.toggle('active', i === idx));
+}
+</script>
+</body>
+</html>
